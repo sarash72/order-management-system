@@ -2,9 +2,10 @@ package org.example.product.controller;
 
 
 import lombok.RequiredArgsConstructor;
-import org.example.product.dto.File;
+import org.example.product.dto.UploadRequest;
 import org.example.product.entity.Product;
 import org.example.product.service.ProductService;
+import org.example.product.service.XmlCompareService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService service;
+    private final XmlCompareService xmlCompareService;
 
     @GetMapping
     public List<Product> all() {
@@ -40,19 +42,21 @@ public class ProductController {
 
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> upload(@ModelAttribute File request) throws Exception {
+    public ResponseEntity<List<String>> upload(@ModelAttribute UploadRequest request) throws Exception {
 
         MultipartFile file = request.getFile();
 
         if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body("File is empty!");
+            return ResponseEntity.badRequest().body(List.of("File is empty!"));
         }
+
+        List<String> changes = xmlCompareService.uploadFile(file, "description");
 
         String xmlContent = new String(file.getBytes());
 
         System.out.println("XML = " + xmlContent);
 
-        return ResponseEntity.ok("XML uploaded successfully!");
+        return ResponseEntity.ok(changes);
     }
 
     @PostMapping("/upload-xml")

@@ -59,5 +59,6 @@ public class OrderService {
     public Product getProductById(Long id) {
         return restClient.get().uri("/{id}", 1)
                 .retrieve().body(Product.class);
+
     }
 }

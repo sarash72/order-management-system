@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
-public class File {
+public class UploadRequest {
 
     private String fileName;
     private String filePath;
