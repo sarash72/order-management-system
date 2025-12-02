@@ -1,6 +1,9 @@
 package org.example.product.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.product.dto.configDto.XmlField;
+import org.example.product.dto.configDto.XmlFile;
+import org.example.product.dto.configDto.XmlFiles;
 import org.example.product.entity.ConfigFileEntity;
 import org.example.product.repository.ConfigFileRepository;
 import org.springframework.stereotype.Service;
@@ -8,18 +11,18 @@ import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xmlunit.builder.*;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
 import org.xmlunit.diff.*;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+
 
 @Service
 @RequiredArgsConstructor()
@@ -600,6 +603,56 @@ public class XmlCompareService {
 
         sb.append("/>"); // بدون children
         return sb.toString();
+    }
+
+    private static final XmlMapper xmlMapper = new XmlMapper();
+
+    public void checkConfigChanges(MultipartFile newFile) throws IOException {
+
+        // تبدیل فایل MultipartFile به رشته
+        String newXml = new String(newFile.getBytes(), StandardCharsets.UTF_8);
+
+        // پیدا کردن آخرین نسخه موجود
+        Optional<ConfigFileEntity> last = Optional.ofNullable(repository.findLatestVersion());
+
+        List<String> diffResult = new ArrayList<>();
+        String newVersion;
+        String previousVersion;
+
+        if (last.isPresent()) {
+
+            String oldXml = new String(last.get().getFile(), StandardCharsets.UTF_8);
+
+            // پارس XMLها به Entity
+            XmlFiles oldCfg = xmlMapper.readValue(oldXml, XmlFiles.class);
+            XmlFiles newCfg = xmlMapper.readValue(newXml, XmlFiles.class);
+
+            ConfigDiffService diffService = new ConfigDiffService();
+            // مقایسه
+            diffResult= diffService.diff(oldCfg, newCfg);
+
+            // چاپ تغییرات
+            diffResult.forEach(System.out::println);
+            // ساختن version جدید
+            previousVersion = last.get().getVersion();
+            newVersion = "v" + (Integer.parseInt(previousVersion.replace("v", "")) + 1);
+
+        }  else {
+        // اولین بار
+        diffResult.add("اولین نسخه فایل ذخیره شد.");
+        previousVersion = "-";
+        newVersion = "v1";
+    }
+
+    // ذخیره در دیتابیس
+    ConfigFileEntity entity = ConfigFileEntity.builder()
+            .file(newFile.getBytes())
+            .description("description")
+            .version(newVersion)
+            .previousVersion(previousVersion)
+            .build();
+
+        repository.save(entity);
     }
 }
 

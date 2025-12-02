@@ -15,6 +15,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -71,6 +72,7 @@ public class ProductController {
         NodeList fileNodes = doc.getElementsByTagName("file");
         int fileCount = fileNodes.getLength();
 
+
         StringBuilder sb = new StringBuilder();
         sb.append("تعداد فایل‌ها: ").append(fileCount).append("\n");
 
@@ -83,5 +85,15 @@ public class ProductController {
         }
 
         return sb.toString();
+    }
+
+    @PostMapping("/check-changes")
+    public ResponseEntity<?> checkConfigChanges(@RequestParam("file") MultipartFile newFile) {
+        try {
+            xmlCompareService.checkConfigChanges(newFile); // سرویس خودش oldXml رو از DB می‌گیره
+            return ResponseEntity.ok("Comparison done! Check console for details.");
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Error reading file: " + e.getMessage());
+        }
     }
 }
