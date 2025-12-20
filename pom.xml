@@ -88,7 +88,11 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version> <!-- نسخه‌ای که موجوده -->
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -137,6 +141,10 @@
             <dependency>
                 <groupId>org.springframework.modulith</groupId>
                 <artifactId>spring-modulith-starter-jpa</artifactId>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-amqp</artifactId>
             </dependency>
         </dependencies>
     </dependencyManagement>
