@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.order.entity.Order;
 import org.example.order.repository.OrderRepository;
 import org.example.product.entity.Product;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -17,7 +16,8 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class OrderService {
+public class
+OrderService {
 
     private final OrderRepository orderRepository;
     private final RestTemplate restTemplate;
